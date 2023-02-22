@@ -24,6 +24,32 @@ namespace Statisitsche_Temp_Erfassung
             var sensorDaten = JsonSerializer.Deserialize<List<SensorDaten>>(sensor)!;
             return sensorDaten;
         }
+
+        public List<SensorDaten> HourlyData()
+        {
+            string[] filePaths = GetFiles();
+
+            return new List<SensorDaten>();
+        }
+
+
+        public List<SensorDaten> DailyData()
+        {
+            string[] filePaths = GetFiles();
+
+            return new List<SensorDaten>();
+        }
+        public List<SensorDaten> WeeklyData()
+        {
+            string[] filePaths = GetFiles();
+
+            return new List<SensorDaten>();
+        }
+
+        private string[] GetFiles()
+        {
+            return Directory.GetFiles(logDirectory, "*.json", SearchOption.TopDirectoryOnly);
+        }
     }
 
 }
