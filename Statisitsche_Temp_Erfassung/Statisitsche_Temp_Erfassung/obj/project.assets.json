@@ -816,19 +816,24 @@
     ]
   },
   "packageFolders": {
-    "C:\\Users\\Info21\\.nuget\\packages\\": {}
+    "C:\\Users\\Bash\\.nuget\\packages\\": {},
+    "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages": {}
   },
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\Info21\\Desktop\\Statisitsche_Temp_Erfassung\\Statisitsche_Temp_Erfassung\\Statisitsche_Temp_Erfassung.csproj",
+      "projectUniqueName": "C:\\VSC_Workspace\\Projekt_Clos\\Statisitsche_Temp_Erfassung\\Statisitsche_Temp_Erfassung\\Statisitsche_Temp_Erfassung.csproj",
       "projectName": "Statisitsche_Temp_Erfassung",
-      "projectPath": "C:\\Users\\Info21\\Desktop\\Statisitsche_Temp_Erfassung\\Statisitsche_Temp_Erfassung\\Statisitsche_Temp_Erfassung.csproj",
-      "packagesPath": "C:\\Users\\Info21\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\Info21\\Desktop\\Statisitsche_Temp_Erfassung\\Statisitsche_Temp_Erfassung\\obj\\",
+      "projectPath": "C:\\VSC_Workspace\\Projekt_Clos\\Statisitsche_Temp_Erfassung\\Statisitsche_Temp_Erfassung\\Statisitsche_Temp_Erfassung.csproj",
+      "packagesPath": "C:\\Users\\Bash\\.nuget\\packages\\",
+      "outputPath": "C:\\VSC_Workspace\\Projekt_Clos\\Statisitsche_Temp_Erfassung\\Statisitsche_Temp_Erfassung\\obj\\",
       "projectStyle": "PackageReference",
+      "fallbackFolders": [
+        "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
+      ],
       "configFilePaths": [
-        "C:\\Users\\Info21\\AppData\\Roaming\\NuGet\\NuGet.Config",
+        "C:\\Users\\Bash\\AppData\\Roaming\\NuGet\\NuGet.Config",
+        "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
         "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
       ],
       "originalTargetFrameworks": [
@@ -836,6 +841,7 @@
       ],
       "sources": {
         "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
+        "C:\\Program Files\\dotnet\\library-packs": {},
         "https://api.nuget.org/v3/index.json": {}
       },
       "frameworks": {
@@ -886,7 +892,7 @@
             "privateAssets": "none"
           }
         },
-        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\7.0.102\\RuntimeIdentifierGraph.json"
+        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\7.0.103\\RuntimeIdentifierGraph.json"
       }
     }
   }

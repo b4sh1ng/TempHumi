@@ -4,7 +4,7 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Statisitsche_Temp_Erfassung"
-        xmlns:lvc="clr-namespace:LiveChartsCore.SkiaSharpView.WPF;assembly=LiveChartsCore.SkiaSharpView.WPF" Height="400" Width="800">
+        xmlns:lvc="clr-namespace:LiveChartsCore.SkiaSharpView.WPF;assembly=LiveChartsCore.SkiaSharpView.WPF" Height="700" Width="1000">
     
     
     <Window.DataContext>
@@ -19,7 +19,7 @@
         <Grid Grid.Row="0">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="3*"/>
-                <ColumnDefinition Width="1*"/>
+                <ColumnDefinition Width=".75*"/>
             </Grid.ColumnDefinitions>
 
             <lvc:CartesianChart Grid.Column="0" Series="{Binding Series}"/>
@@ -28,9 +28,13 @@
                 <Grid.RowDefinitions>
                     <RowDefinition/>
                     <RowDefinition/>
+                    <RowDefinition/>
                 </Grid.RowDefinitions>
                 <lvc:PieChart Grid.Row="0" Series="{Binding CurrentHumiditySeries}" InitialRotation="-90" LegendPosition="Bottom" Total="100" MaxAngle="270"></lvc:PieChart>
                 <lvc:PieChart Grid.Row="1" Series="{Binding CurrentTemperatureSeries}" InitialRotation="-90" LegendPosition="Bottom" Total="60" MaxAngle="270" ></lvc:PieChart>
+                <TreeView Grid.Row="2" Name="trvWeeks">
+                    
+                </TreeView>
             </Grid>
         </Grid>
         <StackPanel Grid.Row="1" Orientation="Horizontal">

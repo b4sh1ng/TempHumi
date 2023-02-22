@@ -15,6 +15,7 @@ using LiveChartsCore.Drawing;
 using System.Windows;
 using CommunityToolkit.Mvvm.ComponentModel;
 using System.Globalization;
+using System.Windows.Controls;
 
 namespace Statisitsche_Temp_Erfassung
 {
@@ -46,13 +47,9 @@ namespace Statisitsche_Temp_Erfassung
 
         public MainWindowViewModel()
         {
-            var xAxis = new Axis
-            {
-                MaxLimit = 0,
-                MinLimit = 96
-            };
+            SensorDaten sensorr = new();
+            var sdsd = sensorr.GetDataa();
 
-            ;
             Series = new ObservableCollection<ISeries>
             {
                 new LineSeries<ObservableValue>
@@ -100,7 +97,7 @@ namespace Statisitsche_Temp_Erfassung
         }
 
         public void AddTempSeries()
-        {
+        {            
             double tempTemperaturwert, tempHumiditywert;
             List<SensorDaten> daten = sensor.AktuellsteDatenAuslesen();
             foreach (var item in daten)
