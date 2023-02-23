@@ -62,8 +62,8 @@ public class Program
     {
         try
         {
-            var lines = File.ReadAllLines("./" + filepath);
-            File.WriteAllLines("./" + filepath, lines.Take(lines.Length - 1).ToArray());
+            var lines = File.ReadAllLines(filepath);
+            File.WriteAllLines(filepath, lines.Take(lines.Length - 1).ToArray());
         }
         catch (Exception)
         {
