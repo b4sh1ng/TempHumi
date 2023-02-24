@@ -48,7 +48,7 @@ namespace Statisitsche_Temp_Erfassung
         public MainWindowViewModel()
         {
             SensorDaten sensorr = new();
-            var sdsd = sensorr.GetDataa();
+            var sdsd = sensorr.GetMeasurementData();
 
             Series = new ObservableCollection<ISeries>
             {
@@ -57,8 +57,7 @@ namespace Statisitsche_Temp_Erfassung
                     Values = humidityValues,
                     Fill = null,
                     GeometrySize = 0,
-                    LineSmoothness= 1,
-
+                    LineSmoothness= 1
                 },
                 new LineSeries<ObservableValue>
                 {
@@ -93,7 +92,6 @@ namespace Statisitsche_Temp_Erfassung
         void timer_Tick(object? sender, EventArgs e)
         {
             Zeit = DateTime.Now.ToString("HH:mm:ss");
-            AddTempSeriesLast();
         }
 
         public void AddTempSeries()
@@ -106,7 +104,10 @@ namespace Statisitsche_Temp_Erfassung
                 tempHumiditywert = Math.Round(item.Humidity, 1);
                 temperatureValues.Add(new(tempTemperaturwert));
                 humidityValues.Add(new(tempHumiditywert));
+                currentTemperature.Value = tempTemperaturwert;
+                currentHumidity.Value = tempHumiditywert;
             }
+
         }
         public void AddTempSeriesLast()
         {

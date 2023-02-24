@@ -8,6 +8,7 @@ using System.Text.Json;
 using System.IO;
 using System.Globalization;
 using static System.Runtime.InteropServices.JavaScript.JSType;
+using Newtonsoft.Json;
 
 namespace Statisitsche_Temp_Erfassung
 {
@@ -27,117 +28,62 @@ namespace Statisitsche_Temp_Erfassung
         {
             string[] filePaths = GetFiles();
             string sensor = File.ReadAllText(filePaths.Last());
-            var sensorDaten = JsonSerializer.Deserialize<List<SensorDaten>>(sensor)!;
-            /*            List<DateTime> dates = new();
-                        foreach (string item in filePaths)
-                        {
-                            string temp;
-                            temp = Path.GetFileName(item);
-                            temp = temp.Substring(0, 6);
-                            DateTime date;
-                            if (DateTime.TryParseExact(temp, "ddMMyy", null, System.Globalization.DateTimeStyles.AssumeLocal, out date))
-                            {
-                                dates.Add(date);
-                            }
-                        }
-                        Calendar calendar = CultureInfo.InvariantCulture.Calendar;
-                        var weeks = dates.GroupBy(d => calendar.GetWeekOfYear(d, CalendarWeekRule.FirstDay, DayOfWeek.Monday));
-                        List<List<List<SensorDaten>>> list = new();
-
-                        foreach (var week in weeks)
-                        {
-                            List<List<SensorDaten>> weekData = new List<List<SensorDaten>>();
-                            foreach (var day in week)
-                            {
-                                List<SensorDaten> dayData = new List<SensorDaten>();
-                                foreach (var hour in Enumerable.Range(0, 24))
-                                {
-                                    var startTime = new DateTime(day.Year, day.Month, day.Day, hour, 0, 0);
-                                    var endTime = startTime.AddHours(1);
-                                    var hourMeasurements = sensorDaten.Where(m => m.Date >= startTime && m.Date < endTime); // Filtern welche Daten in eine Stunde sind                        
-                                    dayData.AddRange(hourMeasurements);
-                                }
-                                weekData.Add(dayData); // Die Täglichen Daten in die Wöchentliche Liste eintragen
-                            }
-                            list.Add(weekData); // Alle Daten in die Liste eintragen
-                        }*/
+            var sensorDaten = System.Text.Json.JsonSerializer.Deserialize<List<SensorDaten>>(sensor)!;
             return sensorDaten;
         }
 
-        public List<List<List<SensorDaten>>> GetDataa()
+        public List<List<List<List<SensorDaten>>>> GetMeasurementData()
         {
-            string[] filePaths = GetFiles();
-            string sensor = File.ReadAllText(filePaths.Last());
-            var sensorDaten = JsonSerializer.Deserialize<List<SensorDaten>>(sensor)!;
-            List<DateTime> dates = new();
-            foreach (string item in filePaths)
-            {
-                string temp;
-                temp = Path.GetFileName(item);
-                temp = temp.Substring(0, 6);
-                DateTime date;
-                if (DateTime.TryParseExact(temp, "ddMMyy", null, System.Globalization.DateTimeStyles.AssumeLocal, out date))
-                {
-                    dates.Add(date);
-                }
-            }
-            Calendar calendar = CultureInfo.InvariantCulture.Calendar;
-            var weeks = dates.GroupBy(d => calendar.GetWeekOfYear(d, CalendarWeekRule.FirstDay, DayOfWeek.Monday));
-            List<List<List<SensorDaten>>> list = new();
+            // Die äusserste Liste beschreibt die Liste selbst darin gibt es eine Liste mit den KWs
+            // und in den KWs sind nochmal die einzelnen Tagen in der Woche
+            // und darin sind die Messwerte nochmal so strukturiert das diese alle Messwerte die in
+            // einer Stunde getätigt wurden sich darin befinden.
 
-            foreach (var week in weeks)
+            List<List<List<List<SensorDaten>>>> messwerte = new List<List<List<List<SensorDaten>>>>();
+            string directory = "C:\\Users\\Bash\\logs";
+            string[] files = Directory.GetFiles(directory);
+
+            // Messwerte aus den JSON-Dateien auslesen und in die verschachtelte Liste einfügen
+            foreach (string file in files)
             {
-                List<List<SensorDaten>> weekData = new List<List<SensorDaten>>();
-                foreach (var day in week)
+                string json = File.ReadAllText(file);
+                List<SensorDaten> measurements = JsonConvert.DeserializeObject<List<SensorDaten>>(json);
+                if(measurements is null)
                 {
-                    List<SensorDaten> dayData = new List<SensorDaten>();
-                    foreach (var hour in Enumerable.Range(0, 24))
+                    break;
+                }
+                foreach (SensorDaten measurement in measurements)
+                {
+                    DateTime timepoint = measurement.Date;
+                    int cw = GetCalendarweek(timepoint);
+                    int day = (int)timepoint.DayOfWeek;
+                    int hour = timepoint.Hour;
+                    // Liste für die Kalenderwoche anlegen
+                    while (messwerte.Count < cw)
                     {
-                        var startTime = new DateTime(day.Year, day.Month, day.Day, hour, 0, 0);
-                        var endTime = startTime.AddHours(1);
-                        var hourMeasurements = sensorDaten.Where(m => m.Date >= startTime && m.Date < endTime); // Filtern welche Daten in eine Stunde sind                        
-                        dayData.AddRange(hourMeasurements);
+                        messwerte.Add(new List<List<List<SensorDaten>>>());
                     }
-                    weekData.Add(dayData); // Die Täglichen Daten in die Wöchentliche Liste eintragen
+                    // Liste für den Tag anlegen
+                    while (messwerte[cw - 1].Count < 7)
+                    {
+                        messwerte[cw - 1].Add(new List<List<SensorDaten>>());
+                    }
+                    // Liste für die Stunde anlegen
+                    while (messwerte[cw - 1][day].Count < 24)
+                    {
+                        messwerte[cw - 1][day].Add(new List<SensorDaten>());
+                    }
+                    // SensorDaten hinzufügen
+                    measurement.Date = timepoint;
+                    messwerte[cw - 1][day][hour].Add(measurement);
                 }
-                list.Add(weekData); // Alle Daten in die Liste eintragen
             }
-            return list;
+            return messwerte;
         }
-
-        /* public List<SensorDaten> HourlyData()
-         {
-             string[] filePaths = GetFiles();
-             List<DateTime> dates = new();
-             foreach (string item in filePaths)
-             {
-                 string temp;
-                 temp = Path.GetFileName(item);
-                 temp = temp.Substring(0, 6);
-                 DateTime date;
-                 if (DateTime.TryParseExact(temp, "ddMMyy", null, System.Globalization.DateTimeStyles.AssumeLocal, out date))
-                 {
-                     dates.Add(date);
-                 }
-             }
-             Calendar calendar = CultureInfo.InvariantCulture.Calendar;
-             var weeks = dates.GroupBy(d => calendar.GetWeekOfYear(d, CalendarWeekRule.FirstDay, DayOfWeek.Monday));
-             List<List<DateTime>> list = new();
-             List<string> calendarWeek = new();
-
-             foreach (var week in weeks)
-             {                
-                 List<DateTime> weekDates = new();
-                 foreach (var day in week)
-                 {
-                     weekDates.Add(day);
-                 }
-                 list.Add(weekDates);
-             }
-             return new List<SensorDaten>();
-         }*/
-
-
+        public static int GetCalendarweek(DateTime dateTime)
+        {
+            return CultureInfo.CurrentCulture.Calendar.GetWeekOfYear(dateTime, CalendarWeekRule.FirstFourDayWeek, DayOfWeek.Monday);
+        }
         public List<SensorDaten> DailyData()
         {
             string[] filePaths = GetFiles();
@@ -150,7 +96,6 @@ namespace Statisitsche_Temp_Erfassung
 
             return new List<SensorDaten>();
         }
-
         private string[] GetFiles()
         {
             return Directory.GetFiles(logDirectory, "*.json", SearchOption.TopDirectoryOnly);
