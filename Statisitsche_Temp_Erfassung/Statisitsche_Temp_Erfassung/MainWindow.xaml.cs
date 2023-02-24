@@ -23,7 +23,8 @@ namespace Statisitsche_Temp_Erfassung
         public MainWindow()
         {
             InitializeComponent();
-            
+            MainWindowViewModel viewModel = new MainWindowViewModel();
+            this.DataContext = viewModel;
         }
     }
 }

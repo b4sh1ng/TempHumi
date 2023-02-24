@@ -3,12 +3,13 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:local="clr-namespace:Statisitsche_Temp_Erfassung"
+        xmlns:self="clr-namespace:Statisitsche_Temp_Erfassung"
+        
         xmlns:lvc="clr-namespace:LiveChartsCore.SkiaSharpView.WPF;assembly=LiveChartsCore.SkiaSharpView.WPF" Height="700" Width="1000">
-    
-    
+
+
     <Window.DataContext>
-        <local:MainWindowViewModel/>
+        <self:MainWindowViewModel/>
     </Window.DataContext>
 
     <Grid Background="AntiqueWhite">
@@ -28,21 +29,23 @@
                 <Grid.RowDefinitions>
                     <RowDefinition/>
                     <RowDefinition/>
-                    <RowDefinition/>
+                    <RowDefinition Height="3*"/>
                 </Grid.RowDefinitions>
                 <lvc:PieChart Grid.Row="0" Series="{Binding CurrentHumiditySeries}" InitialRotation="-90" LegendPosition="Bottom" Total="100" MaxAngle="270"></lvc:PieChart>
                 <lvc:PieChart Grid.Row="1" Series="{Binding CurrentTemperatureSeries}" InitialRotation="-90" LegendPosition="Bottom" Total="60" MaxAngle="270" ></lvc:PieChart>
-                <TreeView Grid.Row="2" Name="trvWeeks">
-                    
+                <TreeView BorderBrush="Azure" Background="BlanchedAlmond" Margin="5" Grid.Row="2" Name="trvMenu" ItemsSource="{Binding Menus}">
+                    <TreeView.ItemTemplate>
+                        <HierarchicalDataTemplate DataType="{x:Type self:MenuItem}" ItemsSource="{Binding Items}">
+                            <TextBlock Text="{Binding Title}" />
+                        </HierarchicalDataTemplate>
+                    </TreeView.ItemTemplate>
                 </TreeView>
             </Grid>
         </Grid>
-        <StackPanel Grid.Row="1" Orientation="Horizontal">
+        <StackPanel Background="Gray" Grid.Row="1" Orientation="Horizontal">
             <TextBlock Text="{Binding Zeit}" HorizontalAlignment="Left" Margin="10,0,0,0" Grid.Row="1" VerticalAlignment="Center"/>
-            <Button Margin="5" Height="25" Width="50" Command="{Binding CurrentData}">Aktuell</Button>
-            <Button Margin="5" Height="25" Width="50" Command="{Binding HourlyData}">Stunde</Button>
-            <Button Margin="5" Height="25" Width="50" Command="{Binding DailyData}">Tag</Button>
-            <Button Margin="5" Height="25" Width="50" Command="{Binding WeeklyData}">Woche</Button>
+            <Button Margin="5" Height="25" Width="80" Command="{Binding CurrentData}">Aktualisieren</Button>
+
         </StackPanel>
 
     </Grid>

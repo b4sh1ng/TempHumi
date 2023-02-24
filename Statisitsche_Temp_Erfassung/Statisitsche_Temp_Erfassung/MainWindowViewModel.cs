@@ -16,6 +16,10 @@ using System.Windows;
 using CommunityToolkit.Mvvm.ComponentModel;
 using System.Globalization;
 using System.Windows.Controls;
+using HarfBuzzSharp;
+
+using System.Security.Cryptography.X509Certificates;
+
 
 namespace Statisitsche_Temp_Erfassung
 {
@@ -30,11 +34,22 @@ namespace Statisitsche_Temp_Erfassung
         private readonly ObservableValue currentHumidity;
         private readonly ObservableValue currentTemperature;
 
+        public ObservableCollection<MenuItem> Menus { get; set; }
+
+
+
+
         private string? zeit;
         public ObservableCollection<ISeries> Series { get; set; }
         public IEnumerable<ISeries> CurrentHumiditySeries { get; set; }
         public IEnumerable<ISeries> CurrentTemperatureSeries { get; set; }
 
+        private TreeView _trvMenu;
+        public TreeView trvMenu
+        {
+            get { return _trvMenu; }
+            set { SetProperty(ref _trvMenu, value); }
+        }
         public string Zeit
         {
             get { return zeit!; }
@@ -47,8 +62,7 @@ namespace Statisitsche_Temp_Erfassung
 
         public MainWindowViewModel()
         {
-            SensorDaten sensorr = new();
-            var sdsd = sensorr.GetMeasurementData();
+            GetMenu();
 
             Series = new ObservableCollection<ISeries>
             {
@@ -94,8 +108,42 @@ namespace Statisitsche_Temp_Erfassung
             Zeit = DateTime.Now.ToString("HH:mm:ss");
         }
 
+        public void GetMenu()
+        {
+
+            SensorDaten sensss = new();
+            List<List<List<List<SensorDaten>>>> measures = sensss.GetMeasurementData();
+            Menus = new ObservableCollection<MenuItem>();
+            int cw = 1;
+            foreach (var week in measures)
+            {
+                MenuItem calendarweek = new MenuItem();
+                if (week.Count > 0)
+                {
+                    calendarweek = new MenuItem() { Title = $"KW {cw}" };
+                }
+                int weekday = 0;
+                foreach (var days in week)
+                {
+                    EnumWeekdays day = (EnumWeekdays)weekday;
+                    MenuItem calendarday = new MenuItem();
+                    if(days.Count > 0)
+                    {
+                        calendarday = new MenuItem() { Title = $"{day}"};
+                        calendarweek.Items.Add(calendarday);
+                    }
+                    weekday++;
+                    
+                }
+                if (calendarweek.Title != null)
+                {
+                    Menus.Add(calendarweek);
+                }
+                cw++;
+            }
+        }
         public void AddTempSeries()
-        {            
+        {
             double tempTemperaturwert, tempHumiditywert;
             List<SensorDaten> daten = sensor.AktuellsteDatenAuslesen();
             foreach (var item in daten)
@@ -128,3 +176,4 @@ namespace Statisitsche_Temp_Erfassung
         }
     }
 }
+

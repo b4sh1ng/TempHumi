@@ -7,8 +7,8 @@ using System.Windows;
 using System.Text.Json;
 using System.IO;
 using System.Globalization;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 using Newtonsoft.Json;
+using System.Collections.ObjectModel;
 
 namespace Statisitsche_Temp_Erfassung
 {
@@ -48,7 +48,7 @@ namespace Statisitsche_Temp_Erfassung
             {
                 string json = File.ReadAllText(file);
                 List<SensorDaten> measurements = JsonConvert.DeserializeObject<List<SensorDaten>>(json);
-                if(measurements is null)
+                if (measurements is null)
                 {
                     break;
                 }
@@ -58,7 +58,7 @@ namespace Statisitsche_Temp_Erfassung
                     int cw = GetCalendarweek(timepoint);
                     int day = (int)timepoint.DayOfWeek;
                     int hour = timepoint.Hour;
-                    // Liste für die Kalenderwoche anlegen
+                    // Liste für die WeekTree anlegen
                     while (messwerte.Count < cw)
                     {
                         messwerte.Add(new List<List<List<SensorDaten>>>());
@@ -84,6 +84,7 @@ namespace Statisitsche_Temp_Erfassung
         {
             return CultureInfo.CurrentCulture.Calendar.GetWeekOfYear(dateTime, CalendarWeekRule.FirstFourDayWeek, DayOfWeek.Monday);
         }
+
         public List<SensorDaten> DailyData()
         {
             string[] filePaths = GetFiles();
