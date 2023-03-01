@@ -2,13 +2,16 @@
 #include "DHT.h"
 #include "DHT_U.h"
 #include "myWifi.h"
-#include "SendHttpRequest.h"
 #include "ArduinoJson.h"
 #include "SPI.h"
 #include "SD.h"
 #include "sdDataDeleter.h"
 #include "NTPClient.h"
 #include "WiFiUdp.h"
+#include "WiFiServer.h"
+
+void HttpHandler();
+void MeasurementHandler();
 
 struct LinesAndPositions
 {
@@ -17,25 +20,21 @@ struct LinesAndPositions
   int EOL[250];      // end of line in file
 };
 
-String serverName = "http://api.crondust.com";
 String PostData;
 String EmptyData;
 String fileName = "/dataLog.json";
 
 const long utcOffsetInSeconds = 3600;
 unsigned long lastTime = 0;
-unsigned long timerDelay = 5000; // alter wert 10000, zukünftiger wert 900000
-unsigned int dataLength = PostData.length();
+unsigned long timerDelay = 30000; // alter wert 10000, zukünftiger wert 600000 => 10min
 const int chipSelect = 5;
-
-int linesInFile;
-int httpResponseCode;
 int dhtPin = 3;
-
-float humidity, temperature;
+int linesInFile;
+double humidity, temperature;
 
 DHT dht(dhtPin, DHT22);
 File storedData;
+WiFiServer server(5000);
 WiFiUDP ntpUDP;
 NTPClient timeClient(ntpUDP, "de.pool.ntp.org", utcOffsetInSeconds);
 
@@ -47,6 +46,7 @@ void setup()
   connectToWifi(); // Eigene Methode um mit dem Wifi zu verbinden
   dht.begin();     // DHT22 Sensor initialisieren
   pinMode(chipSelect, OUTPUT);
+  server.begin();
   if (!SD.begin(chipSelect))
   {
     Serial.println("SD Card initialization failed!");
@@ -58,76 +58,86 @@ void setup()
 
 void loop()
 {
-  if ((millis() - lastTime) > timerDelay)
+  HttpHandler();
+  MeasurementHandler();
+}
+void HttpHandler()
+{
+  WiFiClient client = server.available();
+  if (client)
   {
-    if (wifiIsConnected())
+    while (client.available())
     {
-      temperature = dht.readTemperature();
-      humidity = dht.readHumidity();
-      float tempRound = truncf(temperature * 10.0) / 10;
-      float humiRound = truncf(humidity * 10.0) / 10;
-
-      DynamicJsonDocument dataJSON(1024);
-      dataJSON["Date"] = timeClient.getFormattedDate();
-      dataJSON["Temperature"] = tempRound;
-      dataJSON["Humidity"] = humiRound;
-      serializeJson(dataJSON, PostData);
-
-      storedData = SD.open("/dataLog.json");
-      if (!(storedData.size() <= 0))
+      String request = client.readStringUntil('\r');
+      String requestPath = request.substring(4, request.indexOf(" ", 4));
+      if (requestPath == "/")
       {
-        LinesAndPositions x = FindLinesAndPositions("/dataLog.json");
-        linesInFile = x.NumberOfLines;
-        DeleteLineFromFile("/dataLog.json", linesInFile - 1); // delete last line with "]"
-        storedData = SD.open("/dataLog.json", FILE_APPEND);
-        storedData.println(",\n" + PostData + "\n]");
-        storedData.close();
-        Serial.println("Daten angefügt");
-
-        storedData = SD.open("/dataLog.json");
-        while (storedData.size() > 8)
+        storedData = SD.open("/dataLog.json", FILE_READ);
+        if (storedData.size() < 1)
         {
-          storedData = SD.open("/dataLog.json", FILE_READ);
+          Serial.println("Daten wurden angefragt, aber keine vorhanden. Sende 404!");
+          client.println("HTTP/1.1 404 No Data");
+          client.println("Content-Type: application/json");
+          client.println("");
+          client.println("");
+          client.stop();          
+        }
+        else
+        {
           String oldestData;
-          for (int i = 1; i < 3; i++)
+          for (int i = 1; i < 2; i++)
           {
             oldestData = storedData.readStringUntil('\n');
-            if (i == 2)
+            storedData.close();
+            if (i == 1)
             {
               Serial.print("Zu sendenen Daten: ");
               Serial.println(oldestData);
-              httpResponseCode = PostSingleJsonData(serverName, "", oldestData);
             }
           }
-          storedData.close();
-          if (httpResponseCode != 201)
-          {
-            Serial.println("Daten konnten nicht gesendet werden! API down?");
-            break;
-          }
-          DeleteMultipleLinesFromFile("/dataLog.json", 2, 3);
-          Serial.print("Deletet: ");
-          Serial.println(oldestData);
-          storedData = SD.open("/dataLog.json");
+          Serial.println(request);
+          client.println("HTTP/1.1 200 OK");
+          client.println("Content-Type: application/json");
+          client.println("");
+          client.println(oldestData);
+          client.stop();
+          DeleteLineFromFile("/dataLog.json", 1);
         }
       }
-      else
-      {
-        httpResponseCode = PostSingleJsonData(serverName, "", PostData);
-        if (httpResponseCode != 201)
-        {
-          storedData = SD.open("/dataLog.json", FILE_WRITE);
-          storedData.println("[\n" + PostData + "\n]");
-          storedData.close();
-        }
-        Serial.println("In neue Datei geschrieben.");
-      }
-      PostData = EmptyData;
-
-      Serial.print("Response Code: ");
-      Serial.println(httpResponseCode);
     }
-    // dataLength = PostData.length();
+  }
+}
+
+void MeasurementHandler()
+{
+  if ((millis() - lastTime) > timerDelay)
+  {
+    temperature = dht.readTemperature();
+    humidity = dht.readHumidity();
+
+    DynamicJsonDocument dataJSON(1024);
+    dataJSON["Date"] = timeClient.getFormattedDate();
+    dataJSON["Temperature"] = temperature;
+    dataJSON["Humidity"] = humidity;
+    serializeJson(dataJSON, PostData);
+
+    storedData = SD.open("/dataLog.json");
+    if (!(storedData.size() <= 0))
+    {
+      storedData = SD.open("/dataLog.json", FILE_APPEND);
+      storedData.println(PostData);
+      storedData.close();
+      Serial.println("Daten angefügt");
+      PostData = EmptyData;
+    }
+    else
+    {
+      storedData = SD.open("/dataLog.json", FILE_WRITE);
+      storedData.println(PostData);
+      storedData.close();
+      Serial.println("Neue Datei erstellt und Daten angefügt");
+      PostData = EmptyData;
+    }
     lastTime = millis();
   }
 }
